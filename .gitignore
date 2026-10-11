@@ -1,0 +1,22 @@
+# Java / Maven
+target/
+*.class
+*.log
+
+# IDE
+.settings/
+.project
+.classpath
+.factorypath
+.sts4-cache/
+.idea/
+.vscode/
+
+# Frontend
+node_modules/
+dist/
+
+# Secrets and private data (never commit these)
+application-dev.yml
+.env
+sample-data/private/
