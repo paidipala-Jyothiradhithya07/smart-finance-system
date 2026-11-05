@@ -1,3 +1,8 @@
+
+jwt:
+    expiration-minutes: 60
+cors:
+    allowed-origins: http://localhost:5173,http://localhost:3000
 spring:
   application:
     name: smart-finance
@@ -28,4 +33,4 @@ app:
         name: US Dollar
       - code: GBP
         symbol: "£"
-        name: British Pound
+        name: British Pound	
