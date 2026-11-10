@@ -9,10 +9,12 @@ import com.smartfinance.entity.Budget;
 
 public interface BudgetRepository extends JpaRepository<Budget, Long> {
 
-    List<Budget> findByUserIdAndBudgetYearAndBudgetMonth(Long userId, Integer year, Integer month);
+	List<Budget> findByUserIdAndBudgetYearAndBudgetMonth(Long userId, Integer year, Integer month);
 
     Optional<Budget> findByIdAndUserId(Long id, Long userId);
 
     boolean existsByUserIdAndCategoryIdAndBudgetYearAndBudgetMonth(
             Long userId, Long categoryId, Integer year, Integer month);
+
+    boolean existsByCategoryId(Long categoryId);
 }
