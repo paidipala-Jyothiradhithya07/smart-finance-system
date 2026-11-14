@@ -3,6 +3,10 @@ spring:
     name: smart-finance
   profiles:
     active: dev
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 30MB
   jpa:
     open-in-view: false
     hibernate:
@@ -33,3 +37,8 @@ app:
     expiration-minutes: 60
   cors:
     allowed-origins: http://localhost:5173,http://localhost:3000
+  statement:
+    max-file-size-mb: 5
+    max-rows: 5000
+    max-files-per-upload: 5
+    header-scan-rows: 30
