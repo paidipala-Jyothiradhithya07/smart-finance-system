@@ -9,9 +9,11 @@ import com.smartfinance.entity.BankStatement;
 
 public interface BankStatementRepository extends JpaRepository<BankStatement, Long> {
 
-    List<BankStatement> findByUserIdOrderByUploadedAtDesc(Long userId);
+    List<BankStatement> findByUserIdOrderByUploadedAtDescIdDesc(Long userId);
 
     Optional<BankStatement> findByIdAndUserId(Long id, Long userId);
+
+    Optional<BankStatement> findByUserIdAndFileHash(Long userId, String fileHash);
 
     boolean existsByUserIdAndFileHash(Long userId, String fileHash);
 }
