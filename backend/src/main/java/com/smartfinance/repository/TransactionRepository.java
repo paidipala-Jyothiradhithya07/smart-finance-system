@@ -44,4 +44,47 @@ public interface TransactionRepository
 
     @Query("select t.transactionDate from Transaction t where t.bankStatement.id = :statementId")
     List<LocalDate> findDatesByBankStatementId(@Param("statementId") Long statementId);
+
+    // ---------- financial analysis ----------
+
+    @Query("select min(t.transactionDate) from Transaction t where t.user.id = :userId")
+    Optional<LocalDate> findEarliestTransactionDate(@Param("userId") Long userId);
+
+    @Query("select max(t.transactionDate) from Transaction t where t.user.id = :userId")
+    Optional<LocalDate> findLatestTransactionDate(@Param("userId") Long userId);
+
+    // One row per (year, month, type): [year, month, type, sum of amount, number of rows]. The database does the adding.
+    @Query("""
+           select extract(year from t.transactionDate), extract(month from t.transactionDate),
+                  t.type, sum(t.amount), count(t.id)
+           from Transaction t
+           where t.user.id = :userId and t.transactionDate between :fromDate and :toDate
+           group by extract(year from t.transactionDate), extract(month from t.transactionDate), t.type
+           """)
+    List<Object[]> sumByMonthAndType(@Param("userId") Long userId,
+                                     @Param("fromDate") LocalDate fromDate,
+                                     @Param("toDate") LocalDate toDate);
+
+    // Only the rows that carry a bank balance, as [date, type, amount, balance after], in true time order
+    @Query("""
+           select t.transactionDate, t.type, t.amount, t.balanceAfter
+           from Transaction t
+           where t.user.id = :userId and t.balanceAfter is not null
+             and t.transactionDate between :fromDate and :toDate
+           order by t.transactionDate asc, t.rowSequence asc, t.id asc
+           """)
+    List<Object[]> findBalancePoints(@Param("userId") Long userId,
+                                     @Param("fromDate") LocalDate fromDate,
+                                     @Param("toDate") LocalDate toDate);
+
+    // [category id, category name, type, sum of amount, number of rows]
+    @Query("""
+           select c.id, c.name, t.type, sum(t.amount), count(t.id)
+           from Transaction t join t.category c
+           where t.user.id = :userId and t.transactionDate between :fromDate and :toDate
+           group by c.id, c.name, t.type
+           """)
+    List<Object[]> sumByCategoryAndType(@Param("userId") Long userId,
+                                        @Param("fromDate") LocalDate fromDate,
+                                        @Param("toDate") LocalDate toDate);
 }
