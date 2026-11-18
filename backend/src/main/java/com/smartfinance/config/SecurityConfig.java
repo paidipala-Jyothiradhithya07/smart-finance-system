@@ -77,7 +77,7 @@ public class SecurityConfig {
                                 request, response, HttpStatus.FORBIDDEN,
                                 "You do not have permission to access this resource")))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/register", "/api/auth/login", "/api/health").permitAll()
+                		.requestMatchers("/api/auth/register", "/api/auth/login", "/api/health", "/api/meta/currencies").permitAll()
                         .anyRequest().authenticated())
                 .addFilterBefore(new JwtAuthFilter(jwtService, userDetailsService),
                         UsernamePasswordAuthenticationFilter.class);
