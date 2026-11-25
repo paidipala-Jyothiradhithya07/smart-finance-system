@@ -7,7 +7,7 @@ export default function TransactionModal({ isOpen, onClose, transaction = null, 
   const [transactionData, setTransactionData] = useState({
     categoryId: '',
     description: '',
-    amount: 0,
+    amount: '',
     type: 'CREDIT',
     paymentMethod: '',
   });
@@ -30,7 +30,7 @@ export default function TransactionModal({ isOpen, onClose, transaction = null, 
           ...transaction,
           categoryId: transaction.categoryId?.toString() || '',
           description: transaction.description || '',
-          amount: transaction.amount || 0,
+          amount: transaction.amount != null ? String(transaction.amount) : '',
           type: transaction.type || 'CREDIT',
           paymentMethod: transaction.paymentMethod || '',
         });
@@ -44,8 +44,7 @@ export default function TransactionModal({ isOpen, onClose, transaction = null, 
   };
 
   const handleAmountChange = (e) => {
-    const value = parseFloat(e.target.value);
-    setTransactionData({ ...transactionData, amount: isNaN(value) ? 0 : value });
+    setTransactionData({ ...transactionData, amount: e.target.value });
   };
 
   const handleTypeChange = (e) => {
@@ -54,14 +53,21 @@ export default function TransactionModal({ isOpen, onClose, transaction = null, 
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
     setError('');
+
+    const text = String(transactionData.amount ?? '').trim();
+    if (!/^\d{1,13}(\.\d{1,2})?$/.test(text) || !/[1-9]/.test(text)) {
+      setError('Please enter a valid amount greater than 0 with at most 2 decimal places.');
+      return;
+    }
+
+    setLoading(true);
 
     try {
       const payload = {
         transactionDate: new Date().toISOString().split('T')[0],
         description: transactionData.description,
-        amount: parseFloat(transactionData.amount),
+        amount: Number(text),
         type: transactionData.type,
         categoryId: parseInt(transactionData.categoryId, 10),
         paymentMethod: transactionData.paymentMethod,
@@ -86,7 +92,7 @@ export default function TransactionModal({ isOpen, onClose, transaction = null, 
     setTransactionData({
       categoryId: '',
       description: '',
-      amount: 0,
+      amount: '',
       type: 'CREDIT',
       paymentMethod: '',
     });
@@ -160,13 +166,11 @@ export default function TransactionModal({ isOpen, onClose, transaction = null, 
               <div className="mb-3">
                 <label className="form-label">Amount</label>
                 <input
-                  type="number"
+                  type="text"
                   name="amount"
                   className="form-control"
                   value={transactionData.amount}
                   onChange={handleAmountChange}
-                  step="0.01"
-                  min="0"
                   disabled={loading}
                 />
               </div>

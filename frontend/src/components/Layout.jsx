@@ -115,15 +115,6 @@ export function Layout() {
                   Analysis
                 </Link>
               </li>
-              <li className="nav-item">
-                <Link
-                  className="nav-link nav-link-custom"
-                  to="/budgets"
-                  onClick={() => setIsNavOpen(false)}
-                >
-                  Budgets
-                </Link>
-              </li>
             </ul>
 
             <div className="d-flex align-items-center gap-3 pt-2 pt-lg-0 border-top border-lg-0 border-secondary">
