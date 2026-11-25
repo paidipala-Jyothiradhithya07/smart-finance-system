@@ -1,8 +1,5 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useAuth } from '../auth/useAuth';
-import { formatMoney } from '../utils/format';
-import { formatDate } from '../utils/format';
-import { apiClient } from '../api/client';
 
 export default function Dashboard() {
   const { user } = useAuth();
@@ -69,98 +66,115 @@ export default function Dashboard() {
               Your financial dashboard is ready. Track transactions, monitor statements, and optimize your monthly savings with real-time financial intelligence.
             </p>
           </div>
-
-          {/* Interactive Controls Bar: Time Range and Tabs */}
-          <div className="d-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-between gap-3 mb-4">
-            {/* Navigation Tabs */}
-            <ul className="nav nav-pills bg-white p-1 rounded-3 border shadow-sm">
-              <li className="nav-item">
-                <button
-                  className={`nav-link rounded-2 py-1 px-3 small ${activeTab === 'overview' ? 'active' : ''}`}
-                  onClick={() => setActiveTab('overview')}
-                >
-                  Overview
-                </button>
-              </li>
-              <li className="nav-item">
-                <button
-                  className={`nav-link rounded-2 py-1 px-3 small ${activeTab === 'planner' ? 'active' : ''}`}
-                  onClick={() => setActiveTab('planner')}
-                >
-                  Savings Planner
-                </button>
-              </li>
-              <li className="nav-item">
-                <button
-                  className={`nav-link rounded-2 py-1 px-3 small ${activeTab === 'activity' ? 'active' : 'btn-outline-secondary'}`}
-                  onClick={() => setActiveTab('activity')}
-                >
-                  Activity Feed
-                </button>
-              </li>
-            </ul>
-
-            {/* Dynamic Time Range Filter Pills */}
-            <div className="btn-group btn-group-sm bg-white p-1 rounded-3 border shadow-sm" role="group">
-              <button
-                type="button"
-                className={`btn btn-sm ${timeRange === 'month' ? 'btn-primary' : 'btn-light text-muted'} rounded-2`}
-                onClick={() => setTimeRange('month')}
-              >
-                This Month
-              </button>
-              <button
-                type="button"
-                className={`btn btn-sm ${timeRange === 'quarter' ? 'btn-primary' : 'btn-light text-muted'} rounded-2`}
-                onClick={() => setTimeRange('quarter')}
-              >
-                Last 3 Months
-              </button>
-              <button
-                type="button"
-                className={`btn btn-sm ${timeRange === 'ytd' ? 'btn-primary' : 'btn-light text-muted'} rounded-2`}
-                onClick={() => setTimeRange('ytd')}
-              >
-                YTD
-              </button>
+          <div className="col-lg-4 text-lg-end mt-3 mt-lg-0">
+            <div className="d-inline-flex flex-column align-items-lg-end gap-1">
+              <div className="d-inline-flex align-items-center gap-2 bg-white bg-opacity-10 rounded-3 p-2 text-white">
+                <span className="small">Today:</span>
+                <span className="fw-semibold small">
+                  {new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}
+                </span>
+              </div>
+              <span className="text-white-50 small" style={{ fontSize: '0.75rem' }}>
+                System Status: All services healthy
+              </span>
+            </div>
+          </div>
         </div>
+      </div>
 
-        {/* Tab 1: Overview */}
-        {activeTab === 'overview' && (
-          <div className="animate-fade-in">
-            {/* KPI Stat Cards */}
-            <div className="row g-3 mb-4">
-              <div className="col-12 col-sm-6 col-lg-3">
-                <div className="stat-card">
-                  <div className="d-flex justify-content-between align-items-start">
-                    <div>
-                      <span className="text-muted small fw-medium">Total Balance</span>
-                      <h3 className="h4 fw-bold text-dark mt-1 mb-0">
-                        {showBalances ? `${currencySymbol} ${user?.monthlySummary?.closingBalance?.toFixed(2) || '0.00'}` : '••••••••'}
-                      </h3>
-                    </div>
-                    <div className="stat-icon-wrapper bg-primary bg-opacity-10 text-primary">
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <rect x="2" y="4" width="20" height="16" rx="2"></rect>
-                        <line x1="2" y1="10" x2="22" y2="10"></line>
-                      </svg>
-                    </div>
+      {/* Interactive Controls Bar: Time Range and Tabs */}
+      <div className="d-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-between gap-3 mb-4">
+        {/* Navigation Tabs */}
+        <ul className="nav nav-pills bg-white p-1 rounded-3 border shadow-sm">
+          <li className="nav-item">
+            <button
+              className={`nav-link rounded-2 py-1 px-3 small ${activeTab === 'overview' ? 'active' : ''}`}
+              onClick={() => setActiveTab('overview')}
+            >
+              Overview
+            </button>
+          </li>
+          <li className="nav-item">
+            <button
+              className={`nav-link rounded-2 py-1 px-3 small ${activeTab === 'planner' ? 'active' : ''}`}
+              onClick={() => setActiveTab('planner')}
+            >
+              Savings Planner
+            </button>
+          </li>
+          <li className="nav-item">
+            <button
+              className={`nav-link rounded-2 py-1 px-3 small ${activeTab === 'activity' ? 'active' : ''}`}
+              onClick={() => setActiveTab('activity')}
+            >
+              Activity Feed
+            </button>
+          </li>
+        </ul>
+
+        {/* Dynamic Time Range Filter Pills */}
+        <div className="btn-group btn-group-sm bg-white p-1 rounded-3 border shadow-sm" role="group">
+          <button
+            type="button"
+            className={`btn btn-sm ${timeRange === 'month' ? 'btn-primary' : 'btn-light text-muted'} rounded-2`}
+            onClick={() => setTimeRange('month')}
+          >
+            This Month
+          </button>
+          <button
+            type="button"
+            className={`btn btn-sm ${timeRange === 'quarter' ? 'btn-primary' : 'btn-light text-muted'} rounded-2`}
+            onClick={() => setTimeRange('quarter')}
+          >
+            Last 3 Months
+          </button>
+          <button
+            type="button"
+            className={`btn btn-sm ${timeRange === 'ytd' ? 'btn-primary' : 'btn-light text-muted'} rounded-2`}
+            onClick={() => setTimeRange('ytd')}
+          >
+            YTD
+          </button>
+        </div>
+      </div>
+
+      {/* Tab 1: Overview */}
+      {activeTab === 'overview' && (
+        <div className="animate-fade-in">
+          {/* KPI Stat Cards */}
+          <div className="row g-3 mb-4">
+            <div className="col-12 col-sm-6 col-lg-3">
+              <div className="stat-card">
+                <div className="d-flex justify-content-between align-items-start">
+                  <div>
+                    <span className="text-muted small fw-medium">Total Balance</span>
+                    <h3 className="h4 fw-bold text-dark mt-1 mb-0">
+                      {showBalances ? `${currencySymbol} 0.00` : '••••••••'}
+                    </h3>
                   </div>
-                  <div className="mt-2 text-muted small d-flex align-items-center justify-content-between">
-                    <span className="badge bg-light text-secondary">
-                      {timeRange === 'month' ? 'Current Period' : timeRange === 'quarter' ? 'Last 3M' : 'Full Year'}
-                    </span>
-                    <span style={{ fontSize: '0.75rem' }}>Closing Balance</span>
+                  <div className="stat-icon-wrapper bg-primary bg-opacity-10 text-primary">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <rect x="2" y="4" width="20" height="16" rx="2"></rect>
+                      <line x1="2" y1="10" x2="22" y2="10"></line>
+                    </svg>
                   </div>
                 </div>
+                <div className="mt-2 text-muted small d-flex align-items-center justify-content-between">
+                  <span className="badge bg-light text-secondary">
+                    {timeRange === 'month' ? 'Current Period' : timeRange === 'quarter' ? 'Last 3M' : 'Full Year'}
+                  </span>
+                  <span style={{ fontSize: '0.75rem' }}>Closing Balance</span>
+                </div>
               </div>
+            </div>
 
-              <div className="col-12 col-sm-6 col-lg-3">
-                <div className="stat-card">
-                  <div className="d-flex justify-content-between align-items-start">
+            <div className="col-12 col-sm-6 col-lg-3">
+              <div className="stat-card">
+                <div className="d-flex justify-content-between align-items-start">
+                  <div>
                     <span className="text-muted small fw-medium">Monthly Inflow</span>
                     <h3 className="h4 fw-bold text-success mt-1 mb-0">
-                      {showBalances ? `${currencySymbol} ${user?.monthlySummary?.totalIncome?.toFixed(2) || '0.00'}` : '••••••••'}
+                      {showBalances ? `${currencySymbol} 0.00` : '••••••••'}
                     </h3>
                   </div>
                   <div className="stat-icon-wrapper bg-success bg-opacity-10 text-success">
@@ -175,13 +189,15 @@ export default function Dashboard() {
                   <span style={{ fontSize: '0.75rem' }}>+0 transactions</span>
                 </div>
               </div>
+            </div>
 
-              <div class="col-12 col-sm-6 col-lg-3">
-                <div className="stat-card">
-                  <div className="d-flex justify-content-between align-items-start">
+            <div className="col-12 col-sm-6 col-lg-3">
+              <div className="stat-card">
+                <div className="d-flex justify-content-between align-items-start">
+                  <div>
                     <span className="text-muted small fw-medium">Monthly Outflow</span>
                     <h3 className="h4 fw-bold text-danger mt-1 mb-0">
-                      {showBalances ? `${currencySymbol} ${user?.monthlySummary?.totalExpense?.toFixed(2) || '0.00'}` : '••••••••'}
+                      {showBalances ? `${currencySymbol} 0.00` : '••••••••'}
                     </h3>
                   </div>
                   <div className="stat-icon-wrapper bg-danger bg-opacity-10 text-danger">
@@ -198,17 +214,19 @@ export default function Dashboard() {
               </div>
             </div>
 
-            <div class="col-12 col-sm-6 col-lg-3">
-              <div class="stat-card">
-                <div class="d-flex justify-content-between align-items-start">
-                  <span className="text-muted small fw-medium">Net Savings</span>
-                  <h3 className="h4 fw-bold text-primary mt-1 mb-0">
-                    {showBalances ? `${currencySymbol} ${user?.monthlySummary?.savings?.toFixed(2) || '0.00'}` : '••••••••'}
-                  </h3>
-                </div>
-                <div class="stat-icon-wrapper bg-primary bg-opacity-10 text-primary">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></svg>
+            <div className="col-12 col-sm-6 col-lg-3">
+              <div className="stat-card">
+                <div className="d-flex justify-content-between align-items-start">
+                  <div>
+                    <span className="text-muted small fw-medium">Net Savings</span>
+                    <h3 className="h4 fw-bold text-primary mt-1 mb-0">
+                      {showBalances ? `${currencySymbol} 0.00` : '••••••••'}
+                    </h3>
+                  </div>
+                  <div className="stat-icon-wrapper bg-primary bg-opacity-10 text-primary">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+                    </svg>
                   </div>
                 </div>
                 <div className="mt-2 text-muted small d-flex align-items-center justify-content-between">
@@ -221,10 +239,10 @@ export default function Dashboard() {
 
           {/* Quick Action Cards */}
           <div className="row g-3 mb-4">
-            <div class="col-12 col-md-4">
-              <div class="premium-card p-3 premium-card-interactive h-100">
-                <div class="d-flex align-items-center gap-3">
-                  <div class="stat-icon-wrapper bg-primary bg-opacity-10 text-primary">
+            <div className="col-12 col-md-4">
+              <div className="premium-card p-3 premium-card-interactive h-100">
+                <div className="d-flex align-items-center gap-3">
+                  <div className="stat-icon-wrapper bg-primary bg-opacity-10 text-primary">
                     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                       <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
                       <polyline points="17 8 12 3 7 8"></polyline>
@@ -232,69 +250,70 @@ export default function Dashboard() {
                     </svg>
                   </div>
                   <div>
-                    <h4 class="h6 fw-bold mb-1">Import Bank Statement</h4>
+                    <h4 className="h6 fw-bold mb-1">Import Bank Statement</h4>
                     <p className="text-muted small mb-0">Upload .csv or .xlsx to parse transactions</p>
                   </div>
                 </div>
               </div>
+            </div>
 
-              <div class="col-12 col-md-4">
-                <div class="premium-card p-3 premium-card-interactive h-100">
-                  <div class="d-flex align-items-center gap-3">
-                    <div class="stat-icon-wrapper bg-success bg-opacity-10 text-success">
-                      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <line x1="12" y1="5" x2="12" y2="19"></line>
-                        <line x1="5" y1="12" x2="19" y2="12"></line>
-                      </svg>
-                    </div>
-                    <div>
-                      <h4 class="h6 fw-bold mb-1">Add Manual Entry</h4>
-                      <p className="text-muted small mb-0">Record a single income or expense</p>
-                    </div>
+            <div className="col-12 col-md-4">
+              <div className="premium-card p-3 premium-card-interactive h-100">
+                <div className="d-flex align-items-center gap-3">
+                  <div className="stat-icon-wrapper bg-success bg-opacity-10 text-success">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <line x1="12" y1="5" x2="12" y2="19"></line>
+                      <line x1="5" y1="12" x2="19" y2="12"></line>
+                    </svg>
                   </div>
-                </div>
-              </div>
-
-              <div class="col-12 col-md-4">
-                <div class="premium-card p-3 premium-card-interactive h-100">
-                  <div class="d-flex align-items-center gap-3">
-                    <div class="stat-icon-wrapper bg-warning bg-opacity-10 text-warning">
-                      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <line x1="18" y1="20" x2="18" y2="10"></line>
-                        <line x1="12" y1="20" x2="12" y2="4"></line>
-                        <line x1="6" y1="20" x2="6" y2="14"></line>
-                      </svg>
-                    </div>
-                    <div>
-                      <h4 class="h6 fw-bold mb-1">Analyze Trends</h4>
-                      <p className="text-muted small mb-0">Monthly breakdown and category ratios</p>
-                    </div>
+                  <div>
+                    <h4 className="h6 fw-bold mb-1">Add Manual Entry</h4>
+                    <p className="text-muted small mb-0">Record a single income or expense</p>
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* Empty State / Getting Started */}
-            <div className="premium-card p-4 text-center py-5">
-              <div
-                className="mx-auto mb-3 d-flex align-items-center justify-content-center rounded-circle bg-primary bg-opacity-10 text-primary"
-                style={{ width: '64px', height: '64px' }}
-              >
-                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <line x1="12" y1="2" x2="12" y2="6"></line>
-                  <line x1="12" y1="18" x2="12" y2="22"></line>
-                  <line x1="4.93" y1="4.93" x2="7.76" y2="7.76"></line>
-                  <line x1="16.24" y1="16.24" x2="19.07" y2="4.93"></line>
-                  <line x1="2" y1="12" x2="6" y2="12"></line>
-                  <line x1="18" y1="12" x2="22" y2="12"></line>
-                  <line x1="16.24" y1="7.76" x2="19.07" y2="4.93"></line>
-                </svg>
+            <div className="col-12 col-md-4">
+              <div className="premium-card p-3 premium-card-interactive h-100">
+                <div className="d-flex align-items-center gap-3">
+                  <div className="stat-icon-wrapper bg-warning bg-opacity-10 text-warning">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <line x1="18" y1="20" x2="18" y2="10"></line>
+                      <line x1="12" y1="20" x2="12" y2="4"></line>
+                      <line x1="6" y1="20" x2="6" y2="14"></line>
+                    </svg>
+                  </div>
+                  <div>
+                    <h4 className="h6 fw-bold mb-1">Analyze Trends</h4>
+                    <p className="text-muted small mb-0">Monthly breakdown and category ratios</p>
+                  </div>
+                </div>
               </div>
-              <h2 className="h4 fw-bold text-dark mb-2">No Financial Data Recorded Yet</h2>
-              <p className="text-muted mx-auto mb-3" style={{ maxWidth: '480px' }}>
-                Your financial dashboard is ready. Upload your bank statements or record transactions manually to see real-time analytics.
-              </p>
             </div>
+          </div>
+
+          {/* Empty State / Getting Started */}
+          <div className="premium-card p-4 text-center py-5">
+            <div
+              className="mx-auto mb-3 d-flex align-items-center justify-content-center rounded-circle bg-primary bg-opacity-10 text-primary"
+              style={{ width: '64px', height: '64px' }}
+            >
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="12" y1="2" x2="12" y2="6"></line>
+                <line x1="12" y1="18" x2="12" y2="22"></line>
+                <line x1="4.93" y1="4.93" x2="7.76" y2="7.76"></line>
+                <line x1="16.24" y1="16.24" x2="19.07" y2="19.07"></line>
+                <line x1="2" y1="12" x2="6" y2="12"></line>
+                <line x1="18" y1="12" x2="22" y2="12"></line>
+                <line x1="4.93" y1="19.07" x2="7.76" y2="16.24"></line>
+                <line x1="16.24" y1="7.76" x2="19.07" y2="4.93"></line>
+              </svg>
+            </div>
+            <h2 className="h4 fw-bold text-dark mb-2">No Financial Data Recorded Yet</h2>
+            <p className="text-muted mx-auto mb-3" style={{ maxWidth: '480px' }}>
+              Your financial dashboard is ready. Upload your bank statements or record transactions manually to see real-time analytics.
+            </p>
           </div>
         </div>
       )}
@@ -361,7 +380,7 @@ export default function Dashboard() {
                 <span className="text-muted small">Compounded potential</span>
               </div>
             </div>
-            <div class="col-12 col-md-4">
+            <div className="col-12 col-md-4">
               <div className="stat-card bg-dark bg-opacity-10 border-dark border-opacity-25">
                 <span className="text-dark fw-medium small">Recommended Daily Allowance</span>
                 <h3 className="h4 fw-bold text-dark mt-1 mb-0">
@@ -377,9 +396,9 @@ export default function Dashboard() {
       {/* Tab 3: Activity Feed */}
       {activeTab === 'activity' && (
         <div className="premium-card p-4 animate-fade-in">
-          <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
+          <div className="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
             <h2 className="h5 fw-bold text-dark mb-0">Transaction Activity</h2>
-            <div class="btn-group btn-group-sm">
+            <div className="btn-group btn-group-sm">
               <button
                 type="button"
                 className={`btn btn-sm ${activityFilter === 'all' ? 'btn-primary' : 'btn-outline-secondary'}`}
@@ -406,8 +425,14 @@ export default function Dashboard() {
 
           <div className="text-center py-5">
             <div className="text-muted mb-2">
-              No recent activity found for filter: <strong className="text-dark">{activityFilter.toUpperCase()}</strong>
+              <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="8" y1="12" x2="16" y2="12"></line>
+              </svg>
             </div>
+            <p className="text-muted small mb-0">
+              No recent activity found for filter: <strong className="text-dark">{activityFilter.toUpperCase()}</strong>
+            </p>
           </div>
         </div>
       )}

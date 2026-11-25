@@ -1,12 +1,9 @@
 import { useState, useEffect } from 'react';
-import { useAuth } from '../auth/useAuth';
 import { categoryApi } from '../api/categoryApi';
 import { transactionApi } from '../api/transactionApi';
-import { getErrorMessage, getFieldErrors } from '../utils/errors';
-import { formatMoney } from '../utils/format';
+import { getErrorMessage } from '../utils/errors';
 
 export default function TransactionModal({ isOpen, onClose, transaction = null, onSubmit }) {
-  const { user } = useAuth();
   const [transactionData, setTransactionData] = useState({
     categoryId: '',
     description: '',
@@ -28,14 +25,17 @@ export default function TransactionModal({ isOpen, onClose, transaction = null, 
   // Load transaction data if editing
   useEffect(() => {
     if (transaction) {
-      setTransactionData({
-        ...transaction,
-        categoryId: transaction.categoryId?.toString() || '',
-        description: transaction.description || '',
-        amount: transaction.amount || 0,
-        type: transaction.type || 'CREDIT',
-        paymentMethod: transaction.paymentMethod || '',
-      });
+      const timer = setTimeout(() => {
+        setTransactionData({
+          ...transaction,
+          categoryId: transaction.categoryId?.toString() || '',
+          description: transaction.description || '',
+          amount: transaction.amount || 0,
+          type: transaction.type || 'CREDIT',
+          paymentMethod: transaction.paymentMethod || '',
+        });
+      }, 0);
+      return () => clearTimeout(timer);
     }
   }, [transaction]);
 
@@ -94,17 +94,21 @@ export default function TransactionModal({ isOpen, onClose, transaction = null, 
     onClose();
   };
 
+  if (!isOpen) {
+    return null;
+  }
+
   const categoryOptions = categories.map(cat => ({
     id: cat.id,
     name: cat.name,
     type: cat.type,
   }));
 
-  const filteredCategories = type === 'INCOME' || type === 'CREDIT'
+  const isIncome = transactionData.type === 'INCOME' || transactionData.type === 'CREDIT';
+
+  const filteredCategories = isIncome
     ? categoryOptions.filter(cat => cat.type === 'INCOME' || cat.type === 'BOTH')
     : categoryOptions.filter(cat => cat.type === 'EXPENSE' || cat.type === 'BOTH');
-
-  const isIncome = transactionData.type === 'INCOME' || transactionData.type === 'CREDIT';
 
   return (
     <div className="modal-backdrop d-flex bg-black bg-opacity-50" onClick={handleClose}>

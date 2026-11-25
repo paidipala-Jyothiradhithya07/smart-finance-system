@@ -1,35 +1,47 @@
 import { useState, useEffect } from 'react';
 import { financeApi } from '../api/financeApi';
 import { formatMoney } from '../utils/format';
-import { useAuth } from '../auth/useAuth';
 
 export default function MonthlyAnalysis() {
-  const { user } = useAuth();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [range, setRange] = useState({ from: '', to: '' });
 
   useEffect(() => {
-    loadData();
-  }, []);
+    let ignore = false;
 
-  const loadData = async () => {
+    financeApi.monthlySummary(range.from, range.to)
+      .then((response) => {
+        if (!ignore) {
+          setData(response.data);
+          setLoading(false);
+        }
+      })
+      .catch(() => {
+        if (!ignore) {
+          setError('Failed to load monthly summary');
+          setLoading(false);
+        }
+      });
+
+    return () => {
+      ignore = true;
+    };
+  }, [range.from, range.to]);
+
+  const handleFilter = async (e) => {
+    e.preventDefault();
     setLoading(true);
     setError('');
     try {
       const response = await financeApi.monthlySummary(range.from, range.to);
       setData(response.data);
-    } catch (err) {
+    } catch {
       setError('Failed to load monthly summary');
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleFilter = (e) => {
-    e.preventDefault();
-    loadData();
   };
 
   return (

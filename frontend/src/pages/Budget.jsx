@@ -1,8 +1,8 @@
-import { apiClient } from './client';
 import { useState, useEffect } from 'react';
+import { apiClient } from '../api/client';
 import { formatMoney } from '../utils/format';
 import { useAuth } from '../auth/useAuth';
-import { TransactionModal } from '../components/TransactionModal';
+import { getErrorMessage } from '../utils/errors';
 
 export default function Budgets() {
   const { user } = useAuth();
@@ -11,24 +11,51 @@ export default function Budgets() {
   const [newBudget, setNewBudget] = useState({ categoryId: '', amount: 0 });
   const [error, setError] = useState('');
 
+  const currencySymbol = user?.currency === 'INR' ? '₹' : user?.currency === 'GBP' ? '£' : '$';
+
   useEffect(() => {
-    apiClient.list().then(response => {
+    let ignore = false;
+
+    apiClient.get('/api/budgets')
+      .then((response) => {
+        if (!ignore) {
+          setBudgets(response.data || []);
+          setLoading(false);
+        }
+      })
+      .catch(() => {
+        if (!ignore) {
+          setBudgets([]);
+          setLoading(false);
+        }
+      });
+
+    return () => {
+      ignore = true;
+    };
+  }, []);
+
+  const loadBudgets = async () => {
+    setLoading(true);
+    setError('');
+    try {
+      const response = await apiClient.get('/api/budgets');
       setBudgets(response.data || []);
+    } catch {
+      setBudgets([]);
+    } finally {
       setLoading(false);
-    }).catch(() => {
-      setError('Failed to load budgets');
-      setLoading(false);
-    });
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    setLoading(true);
     try {
-      await apiClient.create(newBudget);
+      await apiClient.post('/api/budgets', newBudget);
       setNewBudget({ categoryId: '', amount: 0 });
-      // Refresh budgets
-      const response = await apiClient.list();
-      setBudgets(response.data || []);
+      await loadBudgets();
     } catch (err) {
       setError(getErrorMessage(err));
     } finally {
@@ -37,12 +64,19 @@ export default function Budgets() {
   };
 
   const handleDelete = async (id) => {
-    if (confirm('Delete this budget?')) {
-      await apiClient.delete(id);
-      const response = await apiClient.list();
-      setBudgets(response.data || []);
+    if (window.confirm('Delete this budget?')) {
+      try {
+        await apiClient.delete(`/api/budgets/${id}`);
+        await loadBudgets();
+      } catch (err) {
+        setError(getErrorMessage(err));
+      }
     }
   };
+
+  const totalBudget = budgets.reduce((sum, b) => sum + (Number(b.amount) || 0), 0);
+  const totalSpent = budgets.reduce((sum, b) => sum + (Number(b.spent) || 0), 0);
+  const totalPercentUsed = totalBudget > 0 ? ((totalSpent / totalBudget) * 100).toFixed(1) : '0.0';
 
   return (
     <div className="premium-card p-4 p-md-5 animate-fade-in">
@@ -50,31 +84,52 @@ export default function Budgets() {
         <h2 className="h5 fw-bold text-dark mb-0">Monthly Budgets</h2>
         <button
           type="button"
-          className="btn btn-sm bg-success text-white px-3 py-1 rounded-pill"
-          onClick={() => setError('')}
+          className="btn btn-sm btn-success px-3 py-1 rounded-pill"
           onClick={() => setNewBudget({ categoryId: '', amount: 0 })}
         >
           + Add Budget
         </button>
       </div>
 
-      {loading && <div className="text-muted">Loading budgets...</div>}
+      {loading && <div className="text-muted mb-3">Loading budgets...</div>}
 
-      {error && <div className="alert alert-danger">{error}</div>}
+      {error && <div className="alert alert-danger mb-3">{error}</div>}
 
       {budgets.length === 0 ? (
         <div className="text-center py-5">
-          <div className="text-muted mb-2">
+          <div className="text-muted mb-3">
             No budgets found for this category
           </div>
-          <button
-            type="button"
-            className="btn btn-sm bg-primary px-3 py-1 rounded-pill"
-            onClick={() => setError('')}
-            onClick={() => setNewBudget({ categoryId: '', amount: 0 })}
-          >
-            Add a new budget
-          </button>
+          <div className="card p-3 mx-auto" style={{ maxWidth: '400px' }}>
+            <h6 className="fw-semibold mb-2">Create New Budget</h6>
+            <form onSubmit={handleSubmit}>
+              <input
+                type="text"
+                placeholder="Category ID or Name"
+                value={newBudget.categoryId}
+                onChange={(e) => setNewBudget({ ...newBudget, categoryId: e.target.value })}
+                className="form-control mb-2"
+                required
+              />
+              <input
+                type="number"
+                placeholder="Amount"
+                className="form-control mb-2"
+                value={newBudget.amount || ''}
+                onChange={(e) => setNewBudget({ ...newBudget, amount: parseFloat(e.target.value) || 0 })}
+                min="0"
+                step="0.01"
+                required
+              />
+              <button
+                type="submit"
+                className="btn btn-primary btn-sm w-100"
+                disabled={loading || !newBudget.categoryId}
+              >
+                Save Budget
+              </button>
+            </form>
+          </div>
         </div>
       ) : (
         <div className="table-responsive">
@@ -82,37 +137,25 @@ export default function Budgets() {
             <thead>
               <tr>
                 <th>Category</th>
-                <th>Amount ({{currencySymbol}})</th>
+                <th>Amount ({currencySymbol})</th>
                 <th>Remaining</th>
                 <th>% Used</th>
                 <th>Actions</th>
               </tr>
             </thead>
             <tbody>
-              {budgets.map(budget => (
+              {budgets.map((budget) => (
                 <tr key={budget.id}>
-                  <td>{user?.categories?.find(c => c.id === budget.categoryId)?.name || 'Unknown'}</td>
-                  <td>
-                    {formatMoney(budget.amount, user?.currency || 'INR')}
-                  </td>
-                  <td>
-                    {formatMoney(budget.amount - (budget.spent || 0), user?.currency || 'INR')}
-                  </td>
-                  <td>
-                    {budget.spent ? (budget.spent / budget.amount * 100).toFixed(1) + '%' : '0%'}
-                  </td>
+                  <td>{user?.categories?.find((c) => c.id === budget.categoryId)?.name || budget.categoryName || 'Unknown'}</td>
+                  <td>{formatMoney(budget.amount, user?.currency || 'INR')}</td>
+                  <td>{formatMoney((budget.amount || 0) - (budget.spent || 0), user?.currency || 'INR')}</td>
+                  <td>{budget.amount ? `${((budget.spent || 0) / budget.amount * 100).toFixed(1)}%` : '0%'}</td>
                   <td>
                     <button
                       type="button"
-                      className="btn btn-sm btn-primary"
+                      className="btn btn-sm btn-primary me-2"
                       data-testid="edit-budget"
-                      onClick={() => {
-                        setNewBudget({
-                          categoryId: budget.categoryId,
-                          amount: budget.amount
-                        });
-                        onClose();
-                      }}
+                      onClick={() => setNewBudget({ categoryId: budget.categoryId, amount: budget.amount })}
                     >
                       Edit
                     </button>
@@ -120,92 +163,50 @@ export default function Budgets() {
                       type="button"
                       className="btn btn-sm btn-danger"
                       data-testid="delete-budget"
-                      onClick={handleDelete}
+                      onClick={() => handleDelete(budget.id)}
                     >
                       Delete
                     </button>
                   </td>
                 </tr>
-              </tbody>
-            </thead>
+              ))}
+            </tbody>
             <tfoot>
               <tr>
                 <td>Total Budget</td>
-                <td>{budgets.reduce((sum, b) => sum + b.amount, 0)}</td>
-                <td>Total Spent: {budgets.reduce((sum, b) => sum + (b.spent || 0), 0)}</td>
-                <td>Total % Used: {budgets.reduce((sum, b) => sum + (b.spent || 0) / b.amount * 100, 0).toFixed(1)}%</td>
+                <td>{totalBudget}</td>
+                <td>Total Spent: {totalSpent}</td>
+                <td>Total % Used: {totalPercentUsed}%</td>
+                <td></td>
               </tr>
               <tr>
                 <td>Add Budget</td>
-                <td colspan="3" className="text-muted">
-                  <input
-                    type="text"
-                    placeholder="Category name"
-                    value={newBudget.categoryId}
-                    onChange={(e) => setNewBudget({ ...newBudget, categoryId: e.target.value })}
-                    className="form-control w-100 mb-2"
-                  />
-                  <input
-                    type="number"
-                    className="form-control w-100 mb-2"
-                    value={newBudget.amount}
-                    onChange={(e) => setNewBudget({ ...newBudget, amount: parseFloat(e.target.value) })}
-                    min="0"
-                  />
-                  <button
-                    type="button"
-                    className="btn btn-success ms-2"
-                    onClick={handleSubmit}
-                    disabled={loading || newBudget.categoryId === ''}
-                  >
-                    Add
-                  </button>
-                </td>
-              </tr>
-              <tr>
-                <td>Total Spent</td>
-                <td colspan="3">{budgets.reduce((sum, b) => sum + (b.spent || 0), 0)}</td>
-              </tr>
-              <tr>
-                <td>Total Budget</td>
-                <td colspan="3">{budgets.reduce((sum, b) => sum + b.amount, 0)}</td>
-              </tr>
-              <tr>
-                <td>Remaining</td>
-                <td colspan="3">{budgets.reduce((sum, b) => sum + (b.amount - (b.spent || 0)), 0)}</td>
-              </tr>
-              <td>% Used</td>
-                <td colspan="3">{budgets.reduce((sum, b) => sum + (b.spent || 0) / b.amount * 100, 0).toFixed(1)}%</td>
-              </tr>
-              <td>Actions</td>
-                <td colspan="3" className="text-end">
-                  <button
-                    type="button"
-                    className="btn btn-sm btn-primary"
-                    data-testid="edit-budget"
-                    onClick={() => {
-                      setNewBudget({
-                        categoryId: budget.categoryId,
-                        amount: budget.amount
-                      });
-                    }>
-                    Edit
-                  </button>
-                  <button
-                    type="button"
-                    className="btn btn-sm btn-danger"
-                    data-testid="delete-budget"
-                    onClick={handleDelete}
-                  >
-                    Delete
-                  </button>
-                </td>
-              </tr>
-              <tr>
-                <td colspan="4" className="text-center py-2">
-                  <div className="text-muted">
-                    <small>Category budgeting is tracked by category, not by date. Create a new budget each month.</small>
-                  </div>
+                <td colSpan={4}>
+                  <form onSubmit={handleSubmit} className="d-flex gap-2">
+                    <input
+                      type="text"
+                      placeholder="Category"
+                      value={newBudget.categoryId}
+                      onChange={(e) => setNewBudget({ ...newBudget, categoryId: e.target.value })}
+                      className="form-control form-control-sm"
+                    />
+                    <input
+                      type="number"
+                      placeholder="Amount"
+                      className="form-control form-control-sm"
+                      value={newBudget.amount || ''}
+                      onChange={(e) => setNewBudget({ ...newBudget, amount: parseFloat(e.target.value) || 0 })}
+                      min="0"
+                      step="0.01"
+                    />
+                    <button
+                      type="submit"
+                      className="btn btn-success btn-sm text-nowrap"
+                      disabled={loading || !newBudget.categoryId}
+                    >
+                      Add
+                    </button>
+                  </form>
                 </td>
               </tr>
             </tfoot>
