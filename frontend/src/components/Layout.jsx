@@ -116,14 +116,14 @@ export function Layout() {
                 </Link>
               </li>
               <li className="nav-item">
-                <Link
-                  className="nav-link nav-link-custom"
-                  to="/statements"
-                  onClick={() => setIsNavOpen(false)}
-                >
-                  Bank Statements
-                </Link>
-              </li>
+  <Link
+    className="nav-link nav-link-custom"
+    to="/upload"
+    onClick={() => setIsNavOpen(false)}
+  >
+    Upload statement
+  </Link>
+</li>
               <li className="nav-item">
                 <Link
                   className="nav-link nav-link-custom"

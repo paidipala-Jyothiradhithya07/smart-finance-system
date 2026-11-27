@@ -8,7 +8,8 @@ import Transactions from './pages/Transactions';
 import StatementUpload from './pages/StatementUpload';
 import MonthlyAnalysis from './pages/MonthlyAnalysis';
 import NotFound from './pages/NotFound';
-
+import TransactionForm from './pages/TransactionForm';
+import UploadStatement from './pages/UploadStatement';
 
 export default function App() {
   return (
@@ -24,6 +25,9 @@ export default function App() {
           <Route path="/expenses" element={<Transactions fixedType="DEBIT" />} />
           <Route path="/statements" element={<StatementUpload />} />
           <Route path="/analysis" element={<MonthlyAnalysis />} />
+          <Route path="transactions/new" element={<TransactionForm key="new" />} />
+          <Route path="transactions/:id/edit" element={<TransactionForm key="edit" />} />
+          <Route path="/upload" element={<UploadStatement />} />
         </Route>
       </Route>
       <Route path="*" element={<NotFound />} />
