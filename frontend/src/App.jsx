@@ -9,6 +9,7 @@ import StatementUpload from './pages/StatementUpload';
 import MonthlyAnalysis from './pages/MonthlyAnalysis';
 import NotFound from './pages/NotFound';
 
+
 export default function App() {
   return (
     <Routes>
@@ -19,6 +20,8 @@ export default function App() {
         <Route element={<Layout />}>
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/transactions" element={<Transactions />} />
+          <Route path="/income" element={<Transactions fixedType="CREDIT" />} />
+          <Route path="/expenses" element={<Transactions fixedType="DEBIT" />} />
           <Route path="/statements" element={<StatementUpload />} />
           <Route path="/analysis" element={<MonthlyAnalysis />} />
         </Route>

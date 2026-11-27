@@ -100,6 +100,24 @@ export function Layout() {
               <li className="nav-item">
                 <Link
                   className="nav-link nav-link-custom"
+                  to="/income"
+                  onClick={() => setIsNavOpen(false)}
+                >
+                  Income
+                </Link>
+              </li>
+              <li className="nav-item">
+                <Link
+                  className="nav-link nav-link-custom"
+                  to="/expenses"
+                  onClick={() => setIsNavOpen(false)}
+                >
+                  Expenses
+                </Link>
+              </li>
+              <li className="nav-item">
+                <Link
+                  className="nav-link nav-link-custom"
                   to="/statements"
                   onClick={() => setIsNavOpen(false)}
                 >
